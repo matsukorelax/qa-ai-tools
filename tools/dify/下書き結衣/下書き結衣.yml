@@ -1,0 +1,310 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 下書き結衣
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:0.2.8@aae2be0913b8c6f0b80cff58e08d7a8b4c214569b41778413fcaea204561ff16
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables:
+  - description: 'こんにちは！開発したいツールのアイデアを教えてください。
+
+      「日報を自動で書きたい」のような一言だけでもOKですが、迷ったら以下のテンプレートをコピーして入力してみてください。私が整理して、足りない部分を質問します。
+
+
+      --- コピー用テンプレート ---
+
+      【作りたいもの】
+
+      （例：スプレッドシートから請求書を作るツール）
+
+
+      【困っていること】
+
+      （例：毎月のコピペ作業が面倒、ミスが多い）
+
+
+      【使う人】
+
+      （例：経理部のメンバー3名）
+
+      -------------------------'
+    id: df6b6977-dd46-4c6f-a9e3-3211338e580f
+    name: opener_message
+    selector:
+    - conversation
+    - opener_message
+    value: 'こんにちは！開発したいツールのアイデアを教えてください。
+
+      「日報を自動で書きたい」のような一言だけでもOKですが、迷ったら以下のテンプレートをコピーして入力してみてください。私が整理して、足りない部分を質問します。
+
+
+      --- コピー用テンプレート ---
+
+      【作りたいもの】
+
+      （例：スプレッドシートから請求書を作るツール）
+
+
+      【困っていること】
+
+      （例：毎月のコピペ作業が面倒、ミスが多い）
+
+
+      【使う人】
+
+      （例：経理部のメンバー3名）
+
+      -------------------------'
+    value_type: string
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: '【背景（任意）】
+
+      ・なぜこの相談をしたいと思ったか
+
+      ・どんな業務・状況で使う想定か
+
+      分かる範囲でOK／空欄でも問題ありません
+
+
+      【困っている点（任意）】
+
+      ・今いちばん時間がかかっている作業
+
+      ・ミスや認識ズレが起きているところ
+
+
+      【理想（任意）】
+
+      ・どうなったら成功か
+
+      ・最終的に人がやらなくてよくしたいこと
+
+
+      上記書けたら書いてみてください。
+
+      書けなければ無記入でいいし、1か所2か所の記入でもOKです！
+
+
+      ↑の確認が済んだら↓に、作りたいツールのイメージを自由に書いてください
+
+      ※こっちは必須です(人д｀o) ｿﾘｿﾘ
+
+      ・箇条書きでもOK
+
+      ・まとまっていなくてOK
+
+      ・メモ感覚でOK'
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: 1766116030468-llm
+      source: '1766116030468'
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+    - data:
+        sourceType: llm
+        targetType: answer
+      id: llm-answer
+      source: llm
+      sourceHandle: source
+      target: answer
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        selected: false
+        title: ユーザー入力
+        type: start
+        variables:
+        - hint: ''
+          label: 背景
+          max_length: 2000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: background
+        - default: ''
+          hint: ''
+          label: 困っていること
+          max_length: 2000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: pain
+        - default: ''
+          hint: ''
+          label: 理想の状態
+          max_length: 2000
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: ideal
+      height: 162
+      id: '1766116030468'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 10
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-5-chat-latest
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 8662aa49-0dcf-4a36-8286-3efa0dad14e9
+          role: system
+          text: "以下の入力が与えられます。\n\n【自由入力（未整理メモ）】\n{{#sys.query#}}\n\n【背景（任意）】\n{{#1766116030468.background#}}\n\
+            \n【困っている点（任意）】\n{{#1766116030468.pain#}}\n\n【理想（任意）】\n{{#1766116030468.ideal#}}\n\
+            \n---\n\n# あなたの役割\nあなたは、システム開発における「超一流の要件定義スペシャリスト」です。\nユーザーのアイデアをヒアリングし、プロジェクトの「目的（Why）」から「詳細設計（How）」までを網羅した、\n\
+            要件定義書のたたき台を作ってください。\n完成度よりも、\n「何が決まっていて、何が未確定か」を明確にすることを優先してください。\n\n\
+            # ゴール\nユーザーとの対話を通じて情報を収集し、\n最終的に「ハイブリッド形式（概要＋詳細リスト）」の要件定義書を出力することです。\n\
+            \n---\n\n# 入力解釈ルール（最重要）\n- {{#sys.query#}} は、未整理・雑多な自由入力として扱ってください\n-\
+            \ 背景 / 困っている点 / 理想 が空欄の場合は、自由入力から補完してください\n- 同じ内容が重複する場合は、構造化入力（背景 / 困っている点\
+            \ / 理想）を優先してください\n- すべての入力を統合し、5W1H（Why / What / Who / When / Where /\
+            \ How）の観点で再構成してください\n\n---\n\n# 進行ルールと行動プロセス\n\n## フェーズ1：ヒアリング（ループ）\n\
+            1. 5W1Hの観点で仕様の不足・矛盾・曖昧点（Gap）を特定してください\n2. Gapを埋めるための質問を、選択肢付き（A案 / B案\
+            \ など）で提示してください\n3. 質問には必ず Q1, Q2... と番号を付けてください\n4. 各回答の文末に、必ず以下を表示してください\
+            \  \n   【進捗：ヒアリング X回目】\n\n### 回答フォーマット指定（毎回必須）\nユーザーが答えやすいよう、必ず以下を文末に付けてください。\n\
+            \n「回答は箇条書き、または改行区切りで入力してください。\n『Q番号』を書く必要はありません。\n（例： ・スプレッドシート ・管理者のみ\
+            \ ・はい）」\n\n---\n\n## フェーズ1：3回目の挙動（厳守）\n- ヒアリングが3回完了した時点で、**要件定義書を絶対に作成しないでください**\n\
+            - 「情報は十分です」などの独自判断は一切行わないでください\n- 必ず、以下の選択肢のみを提示し、ユーザーの指示を待ってください\n\n\
+            【確認】ヒアリングが3回完了しました。  \n次のアクションを選択（または入力）してください：\n\n- [出力する]：ここまでの内容で要件定義書を作成します\n\
+            - [継続する]：ヒアリングを続行します（4回目へ）\n\n---\n\n## フェーズ2：出力（トリガー実行）\nユーザーが「出力する」（または同等の指示）を選択した場合のみ、\n\
+            以下のフォーマットで最終成果物を作成してください。\n\n# 要件定義書兼・基本設計書\n\n## 1. プロジェクト概要（Why & What）\n\
+            - プロジェクト名：AIが適切な名称を提案\n- 背景・課題：ユーザーが解決したい悩み\n- 導入メリット：工数削減、品質向上、ミス防止などの具体効果\n\
+            - ターゲット：想定ユーザー\n\n## 2. 業務フロー（Who / When / Where）\n- 利用シーン：いつ、どこで使うか\n\
+            - 前提条件：環境、権限、APIキーなど\n- 処理フロー：\n  1. ユーザー操作\n  2. システム処理\n  3. 出力・結果\n\
+            \n## 3. 機能要件詳細リスト（How）\n| 大項目 | 中項目 | 小項目（詳細・ロジック） | 前提条件 | テスト結果（期待値）\
+            \ |\n| --- | --- | --- | --- | --- |\n| （例）設定 | API登録 | キー保存 | 有効性チェック\
+            \ | 保存完了ログ |\n\n## 4. AIからの推奨アドバイス\n- 追加で検討すべき点\n- 将来的な拡張案\n- リスクや注意点\n\
+            \n---\n\n# 出力品質ルール\n実務レベルを前提とした文書として記述する\n誇張表現、過度な期待値、断定的な数値は使用しない\n\
+            PoCフェーズであることを前提に、段階的な実現計画を示す\n\n# 修正対応について\n出力内容に対して「違う」「修正したい」「議論を続けたい」などのフィードバックがあった場合は、\n\
+            即座にヒアリングモードに戻り、追加の質問を行ってください。\n\n---\n\n# ユーザーへの最初のメッセージ\n「開発したいツールのアイデアを入力してください。\n\
+            まとまっていなくてOKです。私が構造化し、足りない点を質問します（基本3回）。」\n"
+        - id: ae76a5c0-42e0-4e92-82c1-94c1a4a3ff3d
+          role: user
+          text: ''
+        selected: true
+        structured_output_enabled: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 89
+      id: llm
+      position:
+        x: 369
+        y: 303
+      positionAbsolute:
+        x: 369
+        y: 303
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        answer: '{{#llm.text#}}'
+        selected: false
+        title: 回答
+        type: answer
+        variables: []
+      height: 103
+      id: answer
+      position:
+        x: 984
+        y: 303
+      positionAbsolute:
+        x: 984
+        y: 303
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    viewport:
+      x: -583.6654844700648
+      y: 89.29926346030032
+      zoom: 1.3348398774039483
+  rag_pipeline_variables: []

@@ -1,0 +1,280 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: slowBugAnalyze
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.6.1@34648f2c0b00c74748654a12b05f219cf501f863acd316e41e1bc655c6d8a5eb
+    version: null
+kind: app
+version: 0.4.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1763716220513-source-1763716227962-target
+      source: '1763716220513'
+      sourceHandle: source
+      target: '1763716227962'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1763716227962-source-1763716258361-target
+      source: '1763716227962'
+      sourceHandle: source
+      target: '1763716258361'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: Project
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: Project
+        - default: ''
+          hint: ''
+          label: ID
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: ID
+        - default: ''
+          hint: ''
+          label: Category
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: Category
+        - default: ''
+          hint: ''
+          label: Component
+          max_length: 256
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: Component
+        - default: ''
+          hint: ''
+          label: Severity
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: Severity
+        - default: ''
+          hint: ''
+          label: LeadTimeDays
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: LeadTimeDays
+        - default: ''
+          hint: ''
+          label: DescriptionLen
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: DescriptionLen
+        - default: ''
+          hint: ''
+          label: Description_clean_enc
+          max_length: 2000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: Description_clean_enc
+      height: 270
+      id: '1763716220513'
+      position:
+        x: 349.5
+        y: 282
+      positionAbsolute:
+        x: 349.5
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gemini-3-pro-preview
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: fdf9f624-bb67-4b54-8697-1a821e2368b6
+          role: system
+          text: "あなたは時給1万円のテストアナリストです。\nテストで起票されたバグチケットの履歴から、「テスターが明日から何を変えれば、バグ修正までのリードタイムを短縮できそうか」を考えることが役割です。\n\
+            \n## 入力データ\n\ninputs.records にはバグチケットの配列が入っています。各要素は次のキーを持ちます：\n\n- ID:\
+            \ バグチケットID（例: \"EN-111\"）\n- Project: プロジェクト名\n- Category: バグカテゴリ\n- Component:\
+            \ 影響コンポーネント\n- Severity: 重要度（致命的 / 高 / 中 / 低 など）\n- LeadTimeDays:\n  -\
+            \ 起票から修正完了までの期間（日数）\n  - 「修正が遅かったバグ」を分析するときの中心指標\n  - 大きいほどテスター行動の改善余地が大きい\n\
+            - DescriptionLen:\n  - 説明文の文字数であり、修正完了までの期間ではありません\n  - 長すぎる / 短すぎることで開発者の理解が遅れる可能性がある\n\
+            \  - 期間とは無関係の指標）\n- Description_clean\n - チケットの内容\n - DescriptionLenとは相関がある\n\
+            \nLeadTimeDays が欠損または数値でないレコードは、リードタイム分析の対象外として扱って構いません。\n\nユーザー情報などは意図的にマスクされています\n\
+            \n## あなたにやってほしいこと\n\nテスターの行動だけにフォーカスして、「こう変えればリードタイムが短くなりそう」という改善案を考えてください。\n\
+            \n- 開発プロセスや組織構造など、テスターから直接コントロールできない要素は、できるだけ避けてください。\n- テスト設計・起票内容・再現手順の書き方・優先度の付け方など、テスター自身の行動で変えられるものに限定してください。\n\
+            \n特に、以下のような観点から考えてください：\n\n- LeadTimeDays が長いバグに共通する「起票内容のまずさ」や「テスト観点の弱さ」はあるか？\n\
+            - Category / Component / Severity ごとに、「こういう情報が最初から入っていれば早く解決できそう」というポイントはあるか？\n\
+            - DescriptionLen が極端に短い or 長いことで、かえって調査が遅くなっていそうなパターンはあるか？\n\n## 出力内容\n\
+            \n出力では、「テスターの改善アクション」のみを返してください。\n\n- tester_actions には、優先度順で 3〜7 個の改善案を入れてください。\n\
+            - 各改善案は以下のように書いてください：\n\n1. title\n   - 一言で分かるタイトル。\n   - 例: 「決済・ポイント系バグでは、起票テンプレートを使う」\n\
+            \n2. detail\n   - 具体的に何をどう変えるのかを、テスター視点で詳しく書いてください。\n   - できるだけ、「いつ／どのようなバグのときに／何をするのか」が分かるようにしてください。\n\
+            \n3. priority\n   - 「高」「中」「低」などで優先度を付けてください。\n   - 全体のリードタイム短縮インパクトが大きそうなものは「高」にしてください。\n\
+            \   - 改善につながりそうな「高」または「中」を優先して出力してください\n\n4. example\n   - 可能であれば、実際のチケットでどう書き換えるかの例を1〜2文で書いてください。\n\
+            \   - 例: 「単に『表示がおかしい』ではなく、『期待値（例: 〇〇pt）と実際値（例: △△pt）を両方書く』」など。\n\n## ID\
+            \ の扱い\n\n必要に応じて具体例としてIDを挙げる場合、入力で与えられたID文字列をそのまま使ってください（加工やマスクは禁止です）。\
+            \  \n例: \"EN-111\" というIDが入力されている場合、\"EN-111\" という文字列をそのまま出力してください。\n\n\
+            ## 出力フォーマット（厳守）\n\n以下の JSON の \"md_table\" に Markdown の表のみを返すこと。\n\n{\n\
+            \  \"md_table\": \"| 改善項目 | 内容 | 優先度 | 具体例 |\\n|---|---|---|---|\\n| ...\
+            \ | ... | ... | ... |\"\n}\n\n- 表以外の文章は一切書かない\n- HTML は返さない\n- JSON のキーは\
+            \ md_table のみ\n"
+        - id: 99aeaeb2-fe36-4ab9-8684-1cea3eaf6402
+          role: user
+          text: '{{#1763716220513.Project#}}{{#1763716220513.ID#}}{{#1763716220513.Category#}}{{#1763716220513.Component#}}{{#1763716220513.Severity#}}{{#1763716220513.LeadTimeDays#}}{{#1763716220513.DescriptionLen#}}{{#1763716220513.Description_clean_enc#}}'
+        selected: true
+        structured_output:
+          schema:
+            additionalProperties: false
+            properties:
+              table_for_tester:
+                type: string
+            required:
+            - table_for_tester
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1763716227962'
+      position:
+        x: 652
+        y: 282
+      positionAbsolute:
+        x: 652
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1763716220513'
+          - ID
+          value_type: string
+          variable: ID
+        - value_selector:
+          - '1763716227962'
+          - structured_output
+          - table_for_tester
+          value_type: object
+          variable: table_for_tester
+        selected: false
+        title: 終了
+        type: end
+      height: 115
+      id: '1763716258361'
+      position:
+        x: 1284
+        y: 282
+      positionAbsolute:
+        x: 1284
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 85.5715529220019
+      y: 137.98625810571855
+      zoom: 0.4286219739367309
+  rag_pipeline_variables: []

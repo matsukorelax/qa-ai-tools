@@ -1,0 +1,686 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 起票ヘルパー
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:0.2.5@373362a028986aae53a7baf73a7f11991ba3c22c69eaf97d6cde048cfd4a9f98
+    version: null
+kind: app
+version: 0.4.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1762236240408-source-1762247511617-target
+      selected: false
+      source: '1762236240408'
+      sourceHandle: source
+      target: '1762247511617'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1762247511617-source-1762220827111-target
+      selected: false
+      source: '1762247511617'
+      sourceHandle: source
+      target: '1762220827111'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1762220827111-source-1762221353647-target
+      selected: false
+      source: '1762220827111'
+      sourceHandle: source
+      target: '1762221353647'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: code
+      id: 1762220528140-source-1762314988784-target
+      source: '1762220528140'
+      sourceHandle: source
+      target: '1762314988784'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1762314988784-source-1762236240408-target
+      source: '1762314988784'
+      sourceHandle: source
+      target: '1762236240408'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 🏃実行ログ入力
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: false
+          type: checkbox
+          variable: input_check_log
+        - default: ''
+          hint: ''
+          label: 操作ログ（要約）
+          max_length: 100
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: memo_check_log
+        - default: ''
+          hint: ''
+          label: 確認した結果
+          max_length: 100
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: memo_result
+        - default: ''
+          hint: ''
+          label: 期待する結果
+          max_length: 100
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: memo_expected_result
+        - default: ''
+          hint: ''
+          label: 再現率
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: memo_rate
+        - default: ''
+          hint: ''
+          label: 確認アカウント
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: false
+          type: paragraph
+          variable: memo_account
+        - default: ''
+          hint: ''
+          label: ユーザーID
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: memo_user_id
+        - default: ''
+          hint: ''
+          label: 出力形式選択
+          max_length: 48
+          options:
+          - QCテンプレ
+          - 要約
+          - 報告文
+          placeholder: ''
+          required: true
+          type: select
+          variable: output_fmt
+        - hide: false
+          hint: ''
+          label: 🧩確認端末選択
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_choice
+        - default: false
+          hint: ''
+          label: PC
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_pc
+        - default: false
+          hint: ''
+          label: Mac
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_mac
+        - default: false
+          hint: ''
+          label: Nexus 6P
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_Nexus_6P
+        - default: false
+          hint: ''
+          label: Galaxy S8 SC-02J
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_Galaxy_S8
+        - default: false
+          hint: ''
+          label: iPhone 13
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_iPhone_13
+        - default: false
+          hint: ''
+          label: iPhone SE2
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: device_iPhone_SE2
+        - default: ''
+          hint: ''
+          label: 🌎確認環境選択
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: choice_field
+        - default: false
+          hint: ''
+          label: stg
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_stg
+        - default: false
+          hint: ''
+          label: dev01
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_dev01
+        - default: false
+          hint: ''
+          label: dev02
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_dev02
+        - default: false
+          hint: ''
+          label: dev03
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_dev03
+        - default: false
+          hint: ''
+          label: dev04
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_dev04
+        - default: false
+          hint: ''
+          label: dev05
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: env_dev05
+        - default: false
+          hint: ''
+          label: prd
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: checkbox
+          variable: prd
+      height: 660
+      id: '1762220528140'
+      position:
+        x: -32.045192118770274
+        y: 6.597539553864465
+      positionAbsolute:
+        x: -32.045192118770274
+        y: 6.597539553864465
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_config:
+          jinja2_variables:
+          - value_selector:
+            - '1762236240408'
+            - selected_devices
+            value_type: string
+            variable: selected_devices
+        prompt_template:
+        - edition_type: basic
+          id: 8e4a216d-715c-4a84-b2cc-eeec2e07b8d5
+          role: system
+          text: 'あなたはQA担当者の起票補助AIです。
+
+            入力された生ログをもとに、以下の5セクションのMarkdownテンプレートで整形してください。
+
+            出力は日本語の敬体で統一し、語尾や記号のゆれを整えてください。
+
+            出力フォーマット:
+
+            チケットタイトル
+
+            {内容がわかりやすく簡潔なタイトル}
+
+            内容
+
+            {観測された現象を簡潔に1〜3行で要約}
+
+            手順
+
+            {再現までの操作手順を番号付きで箇条書き化}
+
+            確認アカウント
+
+
+            再現環境
+
+            {{#1762236240408.selected_devices#}}
+
+
+            確認環境
+
+            {{#1762247511617.selected_envs#}}
+
+            整形ルール:
+
+            "〜です／ます"で統一
+
+            手順の説明では"〜です／ます"を使わず分かりやすく簡潔に
+
+            数字は半角
+
+            URLは<>で囲む
+
+            不明箇所は「（未指定）」と出力
+
+            再現率・動画・スクショ情報は内容欄の末尾に追加
+
+            入力:
+
+            {{#1762314988784.test_memo#}}
+
+            出力形式:
+
+            {{#1762220528140.output_fmt#}}'
+        - id: 6b97d3b9-1ff8-4225-a16b-59be4b9128d0
+          role: user
+          text: '{{#1762236240408.selected_devices#}}{{#1762247511617.selected_envs#}}'
+        - id: cd8ab932-0f27-4917-b9d0-7ce425e5bda8
+          role: assistant
+          text: ''
+        selected: false
+        structured_output_enabled: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1762220827111'
+      position:
+        x: 1326
+        y: 208
+      positionAbsolute:
+        x: 1326
+        y: 208
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1762220827111'
+          - text
+          value_type: string
+          variable: result
+        selected: false
+        title: 終了
+        type: end
+      height: 89
+      id: '1762221353647'
+      position:
+        x: 1668
+        y: 208
+      positionAbsolute:
+        x: 1668
+        y: 208
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(\n    device_pc=False,\n    device_mac=False,\n    device_Nexus_6P=False,\n\
+          \    device_Galaxy_S8=False,\n    device_iPhone_13=False,\n    device_iPhone_SE2=False\n\
+          ):\n    def is_true(v):\n        \"\"\"True, \"true\", \"True\", 1, \"1\"\
+          \ のみ真扱い\"\"\"\n        return str(v).lower() in [\"true\", \"1\"]\n\n  \
+          \  devices = {\n        \"Windows 11 / Chrome\": is_true(device_pc),\n \
+          \       \"macOS / Safari\": is_true(device_mac),\n        \"Nexus 6P / Android\
+          \ 8\": is_true(device_Nexus_6P),\n        \"Galaxy S8 SC-02J / Android 9\"\
+          : is_true(device_Galaxy_S8),\n        \"iPhone 13 / iOS 18.3\": is_true(device_iPhone_13),\n\
+          \        \"iPhone SE2 / iOS 17.0.3\": is_true(device_iPhone_SE2),\n    }\n\
+          \n    true_devices = [f\"- {name}\" for name, val in devices.items() if\
+          \ val]\n    if true_devices:\n        output = \"\\n\".join(true_devices)\n\
+          \    else:\n        output = \"\\n\".join([f\"- {name}\" for name in devices.keys()])\n\
+          \n    return {\n        \"selected_devices\": output\n    }\n"
+        code_language: python3
+        outputs:
+          selected_devices:
+            children: null
+            type: string
+        selected: false
+        title: 端末選択
+        type: code
+        variables:
+        - value_selector:
+          - '1762220528140'
+          - device_pc
+          value_type: boolean
+          variable: device_pc
+        - value_selector:
+          - '1762220528140'
+          - device_mac
+          value_type: boolean
+          variable: device_mac
+        - value_selector:
+          - '1762220528140'
+          - device_Nexus_6P
+          value_type: boolean
+          variable: device_Nexus_6P
+        - value_selector:
+          - '1762220528140'
+          - device_Galaxy_S8
+          value_type: boolean
+          variable: device_Galaxy_S8
+        - value_selector:
+          - '1762220528140'
+          - device_iPhone_13
+          value_type: boolean
+          variable: device_iPhone_13
+        - value_selector:
+          - '1762220528140'
+          - device_iPhone_SE2
+          value_type: boolean
+          variable: device_iPhone_SE2
+      height: 52
+      id: '1762236240408'
+      position:
+        x: 642
+        y: 226
+      positionAbsolute:
+        x: 642
+        y: 226
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(\n    env_stg=False,\n    env_dev01=False,\n    env_dev02=False,\n\
+          \    env_dev03=False,\n    env_dev04=False,\n    env_dev05=False,\n    prd=False\n\
+          ):\n    def is_true(v):\n        \"\"\"True, \"true\", \"True\", 1, \"1\"\
+          \ のみ真扱い\"\"\"\n        return str(v).lower() in [\"true\", \"1\"]\n\n  \
+          \  envs = {\n    \"https://prd.example.com/\": is_true(prd),\n\
+          \    \"https://stg.example.com/\": is_true(env_stg),\n\
+          \    \"https://dev01.example.com/\": is_true(env_dev01),\n\
+          \    \"https://dev02.example.com/\": is_true(env_dev02),\n\
+          \    \"https://dev03.example.com/\": is_true(env_dev03),\n\
+          \    \"https://dev04.example.com/\": is_true(env_dev04),\n\
+          \    \"https://dev05.example.com/\": is_true(env_dev05),\n\
+          \    }\n\n    # Trueの環境を抽出\n    true_envs = [f\"- {name}\" for name, val\
+          \ in envs.items() if val]\n\n    # 未選択時は prd, stg, dev01 のみ出力\n    if\
+          \ not true_envs:\n        output = \"- https://prd.example.com/\\n- https://stg.example.com/\\\
+          n- https://dev01.example.com/\"\n    else:\n        output = \"\\\
+          n\".join(true_envs)\n\n    return {\"selected_envs\": output}"
+        code_language: python3
+        outputs:
+          selected_envs:
+            children: null
+            type: string
+        selected: false
+        title: 確認環境選択
+        type: code
+        variables:
+        - value_selector:
+          - '1762220528140'
+          - env_stg
+          value_type: boolean
+          variable: env_stg
+        - value_selector:
+          - '1762220528140'
+          - env_dev01
+          value_type: boolean
+          variable: env_dev01
+        - value_selector:
+          - '1762220528140'
+          - env_dev02
+          value_type: boolean
+          variable: env_dev02
+        - value_selector:
+          - '1762220528140'
+          - env_dev03
+          value_type: boolean
+          variable: env_dev03
+        - value_selector:
+          - '1762220528140'
+          - env_dev04
+          value_type: boolean
+          variable: env_dev04
+        - value_selector:
+          - '1762220528140'
+          - env_dev05
+          value_type: boolean
+          variable: env_dev05
+        - value_selector:
+          - '1762220528140'
+          - prd
+          value_type: boolean
+          variable: prd
+      height: 52
+      id: '1762247511617'
+      position:
+        x: 984
+        y: 226
+      positionAbsolute:
+        x: 984
+        y: 226
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(**kwargs):\n    def process_account_dt(memo_account):\n  \
+          \      \"\"\"アカウント情報の整形\"\"\"\n        if not memo_account:\n          \
+          \  return \"guest\"\n\n        # 改行で分割\n        parts = memo_account.split(\"\
+          \\n\", 1)\n        account = parts[0].strip()  # 1行目\n        pwd = parts[1].strip()\
+          \ if len(parts) > 1 else \"（未指定）\"  # 2行目があれば使う\n\n        return f\"account:\
+          \ {account}\\npwd: {pwd}\"\n\n    def make_user_id(memo_user_id):\n    \
+          \    \"\"\"ユーザーIDの整形\"\"\"\n        if memo_user_id:\n            return\
+          \ f\"user_id:{memo_user_id}\"\n        return None\n\n    # 整形処理\n    kwargs[\"\
+          memo_user_id\"] = make_user_id(kwargs.get(\"memo_user_id\"))\n    kwargs[\"\
+          memo_account\"] = process_account_dt(kwargs.get(\"memo_account\"))\n\n \
+          \   # memo_系の変数を改行で結合\n    memo_vars = {k: v for k, v in kwargs.items()\
+          \ if k.startswith(\"memo_\") and v}\n    test_memo = \"\\n\".join([f\"{k}:\
+          \ {v}\" for k, v in memo_vars.items()])\n\n    return {\"test_memo\": test_memo\
+          \ or \"（未入力）\"}\n"
+        code_language: python3
+        outputs:
+          test_memo:
+            children: null
+            type: string
+        selected: false
+        title: 実行ログ統合
+        type: code
+        variables:
+        - value_selector:
+          - '1762220528140'
+          - memo_check_log
+          value_type: string
+          variable: memo_check_log
+        - value_selector:
+          - '1762220528140'
+          - memo_result
+          value_type: string
+          variable: memo_result
+        - value_selector:
+          - '1762220528140'
+          - memo_account
+          value_type: string
+          variable: memo_account
+        - value_selector:
+          - '1762220528140'
+          - memo_expected_result
+          value_type: string
+          variable: memo_expected_result
+        - value_selector:
+          - '1762220528140'
+          - memo_rate
+          value_type: string
+          variable: memo_rate
+        - value_selector:
+          - '1762220528140'
+          - memo_user_id
+          value_type: string
+          variable: memo_user_id
+      height: 52
+      id: '1762314988784'
+      position:
+        x: 269.9548078812297
+        y: 6.597539553864465
+      positionAbsolute:
+        x: 269.9548078812297
+        y: 6.597539553864465
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -48.91763269075557
+      y: 281.4012328213872
+      zoom: 0.829245550825676
+  rag_pipeline_variables: []

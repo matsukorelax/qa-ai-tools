@@ -1,0 +1,203 @@
+{
+  "name": "slow-bug-analyze",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "YOUR_WEBHOOK_ID",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        304
+      ],
+      "id": "f3545f56-a50f-4ba3-9721-e9d4da96c75f",
+      "name": "Webhook",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "dummy_auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dify.example.com/v1/workflows/run",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer YOUR_DIFY_API_KEY\",\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": {\n    \"Project\": \"{{ $json.json.Project }}\",\n    \"ID\": \"{{ $json.json.ID }}\",\n    \"Category\": \"{{ $json.json.Category }}\",\n    \"Component\": \"{{ $json.json.Component }}\",\n    \"Severity\": \"{{ $json.json.Severity }}\",\n    \"LeadTimeDays\": \"{{ $json.json.LeadTimeDays }}\",\n    \"DescriptionLen\": \"{{ $json.json.DescriptionLen }}\",\n    \"Description_clean_enc\": \"{{ $json.Description_clean_enc }}\"\n  },\n  \"response_mode\": \"blocking\",\n  \"user\": \"qa_automation\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        304
+      ],
+      "id": "a1d36a2d-76db-48c9-9b43-0c1c05e293a3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.body.items.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        304
+      ],
+      "id": "0863d4c2-ece8-4d32-b80c-e2f4355263fc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        384,
+        288
+      ],
+      "id": "ae09108b-cbe7-4ee2-b72a-a2113cd165f6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        304
+      ],
+      "id": "bd48c624-548a-448b-97d1-9648c61e45ea",
+      "name": "Wait",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "let text = \"\";\n\nfor (const item of items) {\n  const outputs = item.json.data.outputs;\n  const id = outputs.ID;\n\n  text += `ID: ${id}\\n`;\n  text += `${String(outputs.table_for_tester)}\\n`;\n  text += `\\n---\\n\\n`;\n}\n\nconst fileId = 'all_reviews';\n\nreturn [\n  {\n    binary: {\n      [fileId]: {\n        data: Buffer.from(text).toString('base64'),\n        mimeType: 'text/plain',\n        fileName: `${fileId}.md`\n      }\n    },\n    json: {}\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        176
+      ],
+      "id": "c318e926-5cc4-45b8-8521-7d472e2039f4",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let text = item.json.json.Description_clean || \"\";\n\ntext = text.replace(/\\r?\\n/g, \"\\\\n\");\ntext = text.replace(/\\t/g, \"\\\\t\");\ntext = text.replace(/]\\(/g, \"]\");\ntext = text.replace(/\\\\/g, \"\\\\\\\\\");\n\nitem.json.Description_clean_enc = text;\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "69b61494-0502-4a8f-8ad3-aea68e29436a",
+      "name": "Json成型"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Json成型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
+    },
+    "Json成型": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
