@@ -1,0 +1,28 @@
+import { Command } from "commander";
+import { generateTests } from "./generator.js";
+
+const program = new Command();
+
+program
+  .name("bugrepro")
+  .description("URL → screenshot → Claude Vision → Appium/WebView test code")
+  .version("0.1.0");
+
+program
+  .command("generate <url>")
+  .alias("gen")
+  .description("Generate test code from a URL")
+  .option("-o, --output <file>", "output file path (default: stdout)")
+  .option("-p, --platform <platform>", "target platform: webview|android|ios", "webview")
+  .option("--viewport <size>", "viewport size WxH", "1280x800")
+  .action(async (url: string, opts: { output?: string; platform: string; viewport: string }) => {
+    const [width, height] = opts.viewport.split("x").map(Number);
+    try {
+      await generateTests({ url, platform: opts.platform, viewport: { width, height }, output: opts.output });
+    } catch (err) {
+      console.error("Error:", err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program.parse();
