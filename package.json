@@ -1,0 +1,25 @@
+{
+  "name": "bugrepro",
+  "version": "0.1.0",
+  "description": "URL → screenshot → Dify Vision → Appium/WebView test code generator",
+  "type": "module",
+  "bin": {
+    "bugrepro": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --env-file=.env src/cli.ts",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0",
+    "commander": "^14.0.0",
+    "dotenv": "^17.4.2",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}
