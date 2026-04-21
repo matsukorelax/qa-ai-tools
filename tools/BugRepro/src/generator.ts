@@ -1,18 +1,21 @@
 import fs from "node:fs/promises";
 import { takeScreenshot } from "./screenshot.js";
-import { analyzeScreenshot } from "./vision.js";
+import { analyzeScreenshot } from "./vision/index.js";
 import { generateTestCode } from "./codegen.js";
 
 export interface GenerateOptions {
   url: string;
   platform: string;
+  title?: string;
+  context?: string;
+  auth?: string;
   viewport: { width: number; height: number };
   output?: string;
 }
 
 export async function generateTests(opts: GenerateOptions): Promise<void> {
   console.error(`[1/3] Taking screenshot of ${opts.url} ...`);
-  const screenshot = await takeScreenshot({ url: opts.url, viewport: opts.viewport });
+  const screenshot = await takeScreenshot({ url: opts.url, title: opts.title, viewport: opts.viewport });
 
   console.error(`[2/3] Analyzing with Claude Vision (platform: ${opts.platform}) ...`);
   const analysis = await analyzeScreenshot(screenshot, opts.platform);

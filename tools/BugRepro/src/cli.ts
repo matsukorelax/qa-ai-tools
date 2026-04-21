@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { Command } from "commander";
 import { generateTests } from "./generator.js";
 
@@ -14,11 +16,14 @@ program
   .description("Generate test code from a URL")
   .option("-o, --output <file>", "output file path (default: stdout)")
   .option("-p, --platform <platform>", "target platform: webview|android|ios", "webview")
+  .option("-t, --title <title>", "screenshot title (default: url)", url => url)
+  .option("-c, --context <text>", "bug context (one-line description)")
+  .option("-a, --auth <status>", "auth status: guest|login", "guest")
   .option("--viewport <size>", "viewport size WxH", "1280x800")
-  .action(async (url: string, opts: { output?: string; platform: string; viewport: string }) => {
+  .action(async (url: string, opts: { output?: string; platform: string; title: string; context?: string; auth: string; viewport: string }) => {
     const [width, height] = opts.viewport.split("x").map(Number);
     try {
-      await generateTests({ url, platform: opts.platform, viewport: { width, height }, output: opts.output });
+      await generateTests({ url, platform: opts.platform, title: opts.title ?? url, context: opts.context, auth: opts.auth, viewport: { width, height }, output: opts.output });
     } catch (err) {
       console.error("Error:", err instanceof Error ? err.message : err);
       process.exit(1);
