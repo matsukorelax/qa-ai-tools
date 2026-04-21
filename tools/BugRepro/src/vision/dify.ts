@@ -1,14 +1,26 @@
-import type { VisionAnalysis, VisionProvider } from "./types.js";
+import type { VisionAnalysis, VisionProvider, AnalyzeOptions } from "./types.js";
 
 const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
 const DIFY_API_KEY = process.env.DIFY_API_KEY ?? "";
 
 export class DifyProvider implements VisionProvider {
-  async analyzeScreenshot(screenshotBuffer: Buffer, platform: string): Promise<VisionAnalysis> {
-    const base64 = screenshotBuffer.toString("base64");
+  async analyze({ platform, domElements, screenshot }: AnalyzeOptions): Promise<VisionAnalysis> {
+    const domSummary = domElements.map(el => {
+      const parts = [el.tagName.toLowerCase()];
+      if (el.role) parts.push(`role="${el.role}"`);
+      if (el.label) parts.push(`label="${el.label.trim().slice(0, 80)}"`);
+      if (el.testId) parts.push(`data-testid="${el.testId}"`);
+      return parts.join(" ");
+    }).join("\n");
 
     const prompt = `You are a test automation expert specializing in ${platform} test code generation.
-Analyze this UI screenshot and return JSON only, with this shape:
+Generate Playwright test code based on the following DOM elements.
+Use getByRole() > getByLabel()/getByText() > getByTestId() > CSS selector in that priority order.
+
+DOM elements:
+${domSummary}
+
+Return JSON only with this shape:
 {
   "pageTitle": "string",
   "rawDescription": "one-line summary",
@@ -17,6 +29,15 @@ Analyze this UI screenshot and return JSON only, with this shape:
   ]
 }`;
 
+    const files = screenshot ? [
+      {
+        type: "image",
+        transfer_method: "base64",
+        upload_file_id: "",
+        data: `data:image/png;base64,${screenshot.toString("base64")}`,
+      },
+    ] : [];
+
     const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
       method: "POST",
       headers: {
@@ -24,19 +45,14 @@ Analyze this UI screenshot and return JSON only, with this shape:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        inputs: {},
+        inputs: {
+          dom_elements: domSummary,
+        },
         query: prompt,
         response_mode: "blocking",
         conversation_id: "",
         user: "bugrepro",
-        files: [
-          {
-            type: "image",
-            transfer_method: "base64",
-            upload_file_id: "",
-            data: `data:image/png;base64,${base64}`,
-          },
-        ],
+        files,
       }),
     });
 

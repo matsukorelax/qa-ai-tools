@@ -1,6 +1,6 @@
-export type { VisionAnalysis, UIElement } from "./types.js";
+export type { VisionAnalysis, UIElement, AnalyzeOptions } from "./types.js";
 
-import type { VisionProvider } from "./types.js";
+import type { VisionProvider, AnalyzeOptions } from "./types.js";
 import { DifyProvider } from "./dify.js";
 import { AnthropicProvider } from "./anthropic.js";
 
@@ -13,6 +13,6 @@ function getProvider(): VisionProvider {
 
 const provider = getProvider();
 
-export function analyzeScreenshot(screenshotBuffer: Buffer, platform: string) {
-  return provider.analyzeScreenshot(screenshotBuffer, platform);
+export function analyzeScreenshot(opts: AnalyzeOptions) {
+  return provider.analyze(opts);
 }

@@ -11,6 +11,12 @@ export interface UIElement {
   action?: string;
 }
 
+export interface AnalyzeOptions {
+  platform: string;
+  domElements: import("../dom/extractDom.js").DomElement[];
+  screenshot?: Buffer;
+}
+
 export interface VisionProvider {
-  analyzeScreenshot(screenshotBuffer: Buffer, platform: string): Promise<VisionAnalysis>;
+  analyze(opts: AnalyzeOptions): Promise<VisionAnalysis>;
 }

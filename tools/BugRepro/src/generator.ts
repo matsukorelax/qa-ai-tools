@@ -2,10 +2,14 @@ import fs from "node:fs/promises";
 import { takeScreenshot } from "./screenshot.js";
 import { analyzeScreenshot } from "./vision/index.js";
 import { generateTestCode } from "./codegen.js";
+import { chromium } from "playwright";
+import { extractElements } from "./dom/extractDom.js";
 
 export interface GenerateOptions {
   url: string;
   platform: string;
+  vision?: boolean;
+  elements?: string[];
   title?: string;
   context?: string;
   auth?: string;
@@ -14,11 +18,16 @@ export interface GenerateOptions {
 }
 
 export async function generateTests(opts: GenerateOptions): Promise<void> {
-  console.error(`[1/3] Taking screenshot of ${opts.url} ...`);
-  const screenshot = await takeScreenshot({ url: opts.url, title: opts.title, viewport: opts.viewport });
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.setViewportSize(opts.viewport);
+  await page.goto(opts.url, {waitUntil: "networkidle"});
+  console.error(`[1/3] ページ取得 ${opts.url} ...`);
+  const domElements = await extractElements(page, opts.elements);
+  const screenshot = opts.vision ? await takeScreenshot(page, { title: opts.title }): undefined;
 
-  console.error(`[2/3] Analyzing with Claude Vision (platform: ${opts.platform}) ...`);
-  const analysis = await analyzeScreenshot(screenshot, opts.platform);
+  console.error(`[2/3] Analyzing with AI (platform: ${opts.platform}) ...`);
+  const analysis = await analyzeScreenshot({ platform: opts.platform, domElements, screenshot });
 
   console.error(`[3/3] Generating test code ...`);
   const code = generateTestCode(analysis, opts.platform, opts.url);
@@ -29,4 +38,5 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   } else {
     process.stdout.write(code + "\n");
   }
-}
+  await browser.close();
+};
