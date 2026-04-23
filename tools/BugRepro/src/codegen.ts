@@ -1,4 +1,4 @@
-import type { VisionAnalysis } from "./vision.js";
+import type { VisionAnalysis } from "./vision/types.js";
 
 export function generateTestCode(analysis: VisionAnalysis, platform: string, url: string): string {
   const lines: string[] = [];

@@ -20,10 +20,29 @@ program
   .option("-c, --context <text>", "bug context (one-line description)")
   .option("-a, --auth <status>", "auth status: guest|login", "guest")
   .option("--viewport <size>", "viewport size WxH", "1280x800")
-  .action(async (url: string, opts: { output?: string; platform: string; title: string; context?: string; auth: string; viewport: string }) => {
+  .option("--vision", "attach screenshot to AI prompt")
+  .action(async (url: string, 
+    opts: { 
+      output?: string; 
+      platform: string; 
+      title: string; 
+      context?: string; 
+      auth: string; 
+      viewport: string;
+      vision: boolean; 
+    }) => {
     const [width, height] = opts.viewport.split("x").map(Number);
     try {
-      await generateTests({ url, platform: opts.platform, title: opts.title ?? url, context: opts.context, auth: opts.auth, viewport: { width, height }, output: opts.output });
+      await generateTests({ 
+        url, 
+        platform: opts.platform, 
+        title: opts.title ?? url, 
+        context: opts.context, 
+        auth: opts.auth, 
+        viewport: { width, height }, 
+        output: opts.output,
+        vision: opts.vision 
+      });
     } catch (err) {
       console.error("Error:", err instanceof Error ? err.message : err);
       process.exit(1);

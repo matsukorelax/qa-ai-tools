@@ -1,10 +1,17 @@
 import type { VisionAnalysis, VisionProvider, AnalyzeOptions } from "./types.js";
 
-const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
-const DIFY_API_KEY = process.env.DIFY_API_KEY ?? "";
-
 export class DifyProvider implements VisionProvider {
-  async analyze({ platform, domElements, screenshot }: AnalyzeOptions): Promise<VisionAnalysis> {
+  async analyze({ 
+    platform, 
+    domElements, 
+    screenshot,
+    target_url,
+    context,
+    user_status 
+  }: AnalyzeOptions): 
+  Promise<VisionAnalysis> {
+    const DIFY_API_URL = process.env.DIFY_API_URL ?? "";
+    const DIFY_API_KEY = process.env.DIFY_API_KEY ?? "";
     const domSummary = domElements.map(el => {
       const parts = [el.tagName.toLowerCase()];
       if (el.role) parts.push(`role="${el.role}"`);
@@ -13,32 +20,8 @@ export class DifyProvider implements VisionProvider {
       return parts.join(" ");
     }).join("\n");
 
-    const prompt = `You are a test automation expert specializing in ${platform} test code generation.
-Generate Playwright test code based on the following DOM elements.
-Use getByRole() > getByLabel()/getByText() > getByTestId() > CSS selector in that priority order.
-
-DOM elements:
-${domSummary}
-
-Return JSON only with this shape:
-{
-  "pageTitle": "string",
-  "rawDescription": "one-line summary",
-  "elements": [
-    { "type": "button|input|link|select|text", "label": "visible text", "selector": "css or xpath hint", "action": "tap|fill|assert" }
-  ]
-}`;
-
-    const files = screenshot ? [
-      {
-        type: "image",
-        transfer_method: "base64",
-        upload_file_id: "",
-        data: `data:image/png;base64,${screenshot.toString("base64")}`,
-      },
-    ] : [];
-
-    const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
+    console.error("AUTH:", `Bearer ${DIFY_API_KEY.slice(0,5)}...`);  
+    const res = await fetch(`${DIFY_API_URL}`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${DIFY_API_KEY}`,
@@ -47,12 +30,18 @@ Return JSON only with this shape:
       body: JSON.stringify({
         inputs: {
           dom_elements: domSummary,
+          platform: platform,
+          bug_screenShot: screenshot ? [{
+            type: "image",
+            transfer_method: "local_file",
+            upload_file_id: await uploadFile(screenshot, DIFY_API_URL, DIFY_API_KEY) 
+          }] : [],
+          target_url: target_url,
+          context: context,
+          user_status: user_status
         },
-        query: prompt,
         response_mode: "blocking",
-        conversation_id: "",
         user: "bugrepro",
-        files,
       }),
     });
 
@@ -65,4 +54,20 @@ Return JSON only with this shape:
     const json = text.match(/\{[\s\S]*\}/)?.[0] ?? "{}";
     return JSON.parse(json) as VisionAnalysis;
   }
+}
+
+async function uploadFile(buffer: Buffer, apiUrl: string, apiKey: string): Promise<string> {
+  const form = new FormData();
+  form.append("file", new Blob([new Uint8Array(buffer)], { type: "image/png" }), "screenshot.png");
+  form.append("user", "bugrepro");
+
+  const res = await fetch(`${apiUrl.replace("/workflows/run", "")}/files/upload`,{
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}` },
+    body: form,
+  });
+
+  if (!res.ok) throw new Error(`File upload error: ${res.status} ${await res.text()}`);
+  const data = await res.json() as { id: string };
+  return data.id;
 }

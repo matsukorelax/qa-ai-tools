@@ -27,7 +27,14 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   const screenshot = opts.vision ? await takeScreenshot(page, { title: opts.title }): undefined;
 
   console.error(`[2/3] Analyzing with AI (platform: ${opts.platform}) ...`);
-  const analysis = await analyzeScreenshot({ platform: opts.platform, domElements, screenshot });
+  const analysis = await analyzeScreenshot({ 
+    platform: opts.platform, 
+    domElements, 
+    screenshot,
+    target_url: opts.url,
+    context: opts.context,
+    user_status: opts.auth
+  });
 
   console.error(`[3/3] Generating test code ...`);
   const code = generateTestCode(analysis, opts.platform, opts.url);
