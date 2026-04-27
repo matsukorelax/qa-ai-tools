@@ -21,6 +21,9 @@ program
   .option("-a, --auth <status>", "auth status: guest|login", "guest")
   .option("--viewport <size>", "viewport size WxH", "1280x800")
   .option("--vision", "attach screenshot to AI prompt")
+  .option(
+    "--elements <categories>", 
+    "DOM categories to extract, comma-separated (ボタン,リンク,入力フォーム,テキスト表示,画像表示,レイアウト)")
   .action(async (url: string, 
     opts: { 
       output?: string; 
@@ -29,7 +32,8 @@ program
       context?: string; 
       auth: string; 
       viewport: string;
-      vision: boolean; 
+      vision: boolean;
+      elements: string;
     }) => {
     const [width, height] = opts.viewport.split("x").map(Number);
     try {
@@ -41,7 +45,8 @@ program
         auth: opts.auth, 
         viewport: { width, height }, 
         output: opts.output,
-        vision: opts.vision 
+        vision: opts.vision,
+        elements: opts.elements ? opts.elements.split(",") : undefined
       });
     } catch (err) {
       console.error("Error:", err instanceof Error ? err.message : err);

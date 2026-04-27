@@ -1,4 +1,4 @@
-export type { VisionAnalysis, UIElement, AnalyzeOptions } from "./types.js";
+export type { AnalyzeOptions } from "./types.js";
 
 import type { VisionProvider, AnalyzeOptions } from "./types.js";
 import { DifyProvider } from "./dify.js";

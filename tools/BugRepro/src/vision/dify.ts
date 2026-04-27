@@ -1,15 +1,14 @@
-import type { VisionAnalysis, VisionProvider, AnalyzeOptions } from "./types.js";
+import type { VisionProvider, AnalyzeOptions } from "./types.js";
 
 export class DifyProvider implements VisionProvider {
-  async analyze({ 
-    platform, 
-    domElements, 
+  async analyze({
+    platform,
+    domElements,
     screenshot,
     target_url,
     context,
-    user_status 
-  }: AnalyzeOptions): 
-  Promise<VisionAnalysis> {
+    user_status
+  }: AnalyzeOptions): Promise<string> {
     const DIFY_API_URL = process.env.DIFY_API_URL ?? "";
     const DIFY_API_KEY = process.env.DIFY_API_KEY ?? "";
     const domSummary = domElements.map(el => {
@@ -49,10 +48,9 @@ export class DifyProvider implements VisionProvider {
       throw new Error(`Dify API error: ${res.status} ${await res.text()}`);
     }
 
-    const data = await res.json() as { answer?: string };
-    const text = data.answer ?? "";
-    const json = text.match(/\{[\s\S]*\}/)?.[0] ?? "{}";
-    return JSON.parse(json) as VisionAnalysis;
+    const data = await res.json() as { data?: { outputs?: { text?: string } } };
+    const makenCode = data.data?.outputs?.text?.replace(/```typescript/, "").replace(/```$/, "")
+    return makenCode ?? "";
   }
 }
 

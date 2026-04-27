@@ -1,10 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { VisionAnalysis, VisionProvider, AnalyzeOptions } from "./types.js";
+import type { VisionProvider, AnalyzeOptions } from "./types.js";
 
 const client = new Anthropic();
 
 export class AnthropicProvider implements VisionProvider {
-  async analyze({ platform, domElements, screenshot }: AnalyzeOptions): Promise<VisionAnalysis> {
+  async analyze({ platform, domElements, screenshot }: AnalyzeOptions): Promise<string> {
     const domSummary = domElements.map(el => {
       const parts = [el.tagName.toLowerCase()];
       if (el.role) parts.push(`role="${el.role}"`);
@@ -47,8 +47,6 @@ Return JSON only with this shape:
       messages: [{ role: "user", content }],
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
-    const json = text.match(/\{[\s\S]*\}/)?.[0] ?? "{}";
-    return JSON.parse(json) as VisionAnalysis;
+    return response.content[0].type === "text" ? response.content[0].text : "";
   }
 }

@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import { takeScreenshot } from "./screenshot.js";
 import { analyzeScreenshot } from "./vision/index.js";
-import { generateTestCode } from "./codegen.js";
 import { chromium } from "playwright";
 import { extractElements } from "./dom/extractDom.js";
+import { execSync } from "child_process";
 
 export interface GenerateOptions {
   url: string;
@@ -27,23 +27,36 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   const screenshot = opts.vision ? await takeScreenshot(page, { title: opts.title }): undefined;
 
   console.error(`[2/3] Analyzing with AI (platform: ${opts.platform}) ...`);
-  const analysis = await analyzeScreenshot({ 
-    platform: opts.platform, 
-    domElements, 
+  const code = await analyzeScreenshot({
+    platform: opts.platform,
+    domElements,
     screenshot,
     target_url: opts.url,
     context: opts.context,
     user_status: opts.auth
   });
 
-  console.error(`[3/3] Generating test code ...`);
-  const code = generateTestCode(analysis, opts.platform, opts.url);
-
+  console.error(`[3/3] Done.`);
   if (opts.output) {
     await fs.writeFile(opts.output, code, "utf8");
-    console.error(`Done. Written to ${opts.output}`);
+    console.error(`Written to ${opts.output}`);
+    const result = await sub_process(`${opts.output}`);
+    console.error(`Test result: ${result}`);
   } else {
     process.stdout.write(code + "\n");
   }
+
+  
+
   await browser.close();
 };
+
+
+async function sub_process(outputPath: string): Promise<string> {
+  try {
+    execSync(`npx playwright test ${outputPath}`, { stdio: "inherit" });
+    return "pass";
+  } catch (e) {
+    return "fail";
+  }
+}
