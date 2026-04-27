@@ -49,7 +49,7 @@ export class DifyProvider implements VisionProvider {
     }
 
     const data = await res.json() as { data?: { outputs?: { text?: string } } };
-    const makenCode = data.data?.outputs?.text?.replace(/```typescript/, "").replace(/```$/, "")
+    const makenCode = data.data?.outputs?.text?.replace(/```typescript/, "").replace(/```python/, "").replace(/```$/, "")
     return makenCode ?? "";
   }
 }

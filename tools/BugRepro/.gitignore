@@ -5,3 +5,5 @@ CLAUDE.md
 screenshots/
 generated/
 knowledge/
+playwright/.auth/
+test-results/

@@ -12,6 +12,7 @@ export async function takeScreenshot(page:Page, opts: ScreenshotOptions): Promis
   const basetitle = base.replace(/[^\w\-]/g, "_");
   let filename = `${basetitle}.png`;
   const path = `screenshots/${filename}`
+  await fs.promises.mkdir("screenshots", { recursive: true });
   const buffer = await page.screenshot({ type: "png", fullPage: false });
   await fs.promises.writeFile(path, buffer);
   return buffer;

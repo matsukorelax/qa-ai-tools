@@ -19,8 +19,16 @@ export interface GenerateOptions {
 }
 
 export async function generateTests(opts: GenerateOptions): Promise<void> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const browser = await chromium.launch({ headless: false });
+  const context = await browser.newContext({
+    ...(process.env.BASIC_USER ? {
+      httpCredentials: {
+        username: process.env.BASIC_USER,
+        password: process.env.BASIC_PASS ?? "",
+      }
+    } : {})
+  });
+  const page = await context.newPage();
   await page.setViewportSize(opts.viewport);
 
   const baseUrl = process.env.BASE_URL;
@@ -33,6 +41,8 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
       await appLogin(page);
       await closePopup(page);
     }
+    await fs.mkdir("playwright/.auth", { recursive: true });
+    await context.storageState({ path: "playwright/.auth/state.json" });
     await page.goto(opts.url, { waitUntil: "networkidle" });
   } else {
     console.error(`[1/3] ページ取得 ${opts.url} ...`);
@@ -53,23 +63,31 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   });
 
   console.error(`[3/3] コード生成完了`);
+  await browser.close();
+
   if (opts.output) {
-    await fs.writeFile(opts.output, code, "utf8");
+    const finalCode = injectStorageState(code);
+    await fs.writeFile(opts.output, finalCode, "utf8");
     console.error(`Written to ${opts.output}`);
     runTest(opts.output);
   } else {
     process.stdout.write(code + "\n");
   }
+}
 
-  await browser.close();
+function injectStorageState(code: string): string {
+  const STATE_FILE = "playwright/.auth/state.json";
+  const injection = `\ntest.use({ storageState: '${STATE_FILE}' });\n`;
+  return code.replace(/(import[^\n]+\n)+/, (imports) => imports + injection);
 }
 
 function runTest(outputPath: string): void {
-  console.error(`\n[実行] playwright test ${outputPath}`);
+  const normalizedPath = outputPath.replace(/\\/g, "/");
+  console.error(`\n[実行] playwright test ${normalizedPath}`);
   const result = spawnSync(
     "npx",
-    ["playwright", "test", "--reporter=list", outputPath],
-    { stdio: "inherit" }
+    ["playwright", "test", "--headed", "--reporter=list", normalizedPath],
+    { stdio: "inherit", env: process.env, shell: true }
   );
   console.error(
     result.status === 0
