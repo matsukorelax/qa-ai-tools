@@ -1,16 +1,19 @@
-import { chromium } from "playwright";
+import { Page } from "playwright";
+import fs from "fs";
 
 export interface ScreenshotOptions {
-  url: string;
-  viewport: { width: number; height: number };
+  title?: string;
 }
 
-export async function takeScreenshot(opts: ScreenshotOptions): Promise<Buffer> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-  await page.setViewportSize(opts.viewport);
-  await page.goto(opts.url, { waitUntil: "networkidle" });
+export async function takeScreenshot(page:Page, opts: ScreenshotOptions): Promise<Buffer> {
+  const base = opts.title ?? 
+  `${String(new Date().getMonth() + 1).padStart(2, "0")}-
+  ${String(new Date().getDate()).padStart(2, "0")}`;
+  const basetitle = base.replace(/[^\w\-]/g, "_");
+  let filename = `${basetitle}.png`;
+  const path = `screenshots/${filename}`
+  await fs.promises.mkdir("screenshots", { recursive: true });
   const buffer = await page.screenshot({ type: "png", fullPage: false });
-  await browser.close();
+  await fs.promises.writeFile(path, buffer);
   return buffer;
 }
