@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import subprocess
 import threading
 import tkinter as tk
@@ -6,8 +8,9 @@ BG = "#1e1e1e"
 FG = "#ffffff"
 ENTRY_BG = "#2d2d2d"
 
-BUGREPRO_DIR = r"C:\Users\s28804\tests\BugRepro"
+BUGREPRO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "BugRepro"))
 
+DEVICES = ["webview", "ios", "android"]
 
 def _label(parent, text):
     return tk.Label(parent, text=text, bg=BG, fg=FG, anchor="w")
@@ -38,6 +41,10 @@ def show_bugrepro_form(root):
     url_entry = _entry(win)
     url_entry.pack(fill="x", **pad)
 
+    _label(win, "viewport").pack(fill="x", **pad)
+    viewport_entry = _entry(win, default="1600x900")
+    viewport_entry.pack(fill="x", **pad)
+    
     _label(win, "スクショタイトル").pack(fill="x", **pad)
     title_entry = _entry(win)
     title_entry.pack(fill="x", **pad)
@@ -45,6 +52,16 @@ def show_bugrepro_form(root):
     _label(win, "コンテキスト").pack(fill="x", **pad)
     context_entry = _entry(win)
     context_entry.pack(fill="x", **pad)
+
+    _label(win, "プラットフォーム").pack(fill="x", **pad)
+    platform_var = {k: tk.BooleanVar() for k in DEVICES}
+    platform_frame = tk.Frame(win, bg=BG)
+    platform_frame.pack(fill="x", **pad)
+    for text, value in [("PC", "webview"), ("iOS", "ios"), ("Android", "android")]:
+        tk.Checkbutton(
+            platform_frame, text=text, variable=platform_var[value],
+            bg=BG, fg=FG, selectcolor="#444", activebackground=BG
+        ).pack(side="left", padx=4)
 
     _label(win, "ステータス").pack(fill="x", **pad)
     status_var = tk.StringVar(value="guest")
@@ -55,6 +72,13 @@ def show_bugrepro_form(root):
             status_frame, text=text, variable=status_var, value=value,
             bg=BG, fg=FG, selectcolor="#444", activebackground=BG
         ).pack(side="left", padx=4)
+    
+    _label(win, "スクリーンショット").pack(fill="x", **pad)
+    vision_var = tk.BooleanVar(value=False)
+    tk.Checkbutton(
+        win, text="AIにスクショを渡す", variable=vision_var,
+        bg=BG, fg=FG, selectcolor="#444", activebackground=BG
+    ).pack(anchor="w", **pad)
 
     _label(win, "結果").pack(fill="x", **pad)
     result_text = tk.Text(win, height=8, bg=ENTRY_BG, fg=FG, relief="flat", bd=6, state="disabled")
@@ -67,6 +91,8 @@ def show_bugrepro_form(root):
         context = context_entry.get().strip()
         status = status_var.get()
         title = title_entry.get().strip()
+        viewport = viewport_entry.get().strip()
+        vision =vision_var.get()
 
         result_text.config(state="normal")
         result_text.delete("1.0", "end")
@@ -75,17 +101,39 @@ def show_bugrepro_form(root):
         submit_btn.config(state="disabled")
 
         def run():
-            cmd = [r"C:\nvm4w\nodejs\npx.cmd", "tsx", "src/cli.ts", "generate", url]
-            if context:
-                cmd += ["--context", context]
-            cmd += ["--title", title]
-            cmd += ["--auth", status]
-            try:
-                proc = subprocess.run(cmd, cwd=BUGREPRO_DIR, capture_output=True, text=True)
-                output = proc.stdout or proc.stderr
-            except Exception as e:
-                output = str(e)
-            win.after(0, lambda: show_result(output))
+            selected = []
+            timestamp = datetime.now().strftime("%m%d-%H%M")
+            safe_title = title.replace(" ", "_") if title else "output"
+            output_path = os.path.join(BUGREPRO_DIR, "generated", f"{safe_title}_{timestamp}.spec.ts")
+            
+            for value, var in platform_var.items():
+                if var.get():
+                    selected.append(value)
+            if not selected:
+                selected = ["webview"]
+            for platform in selected:
+                cmd = [r"C:\nvm4w\nodejs\npx.cmd", "tsx", "src/cli.ts", "generate", url]
+                if context:
+                    cmd += ["--context", context]
+                cmd += ["--title", title]
+                cmd += ["--auth", status]
+                cmd += ["--platform", platform]
+                cmd += ["--output", output_path]
+                if vision:
+                    cmd += ["--vision"]
+                if viewport:
+                    cmd += ["--viewport", viewport]
+                try:
+                    proc = subprocess.run(cmd, 
+                    cwd=BUGREPRO_DIR, 
+                    capture_output=True, 
+                    text=True,
+                    encoding="utf-8"
+                    )
+                    output = proc.stdout or proc.stderr or "出力が空です"
+                except Exception as e:
+                    output = str(e)
+                win.after(0, lambda: show_result(output))
 
         def show_result(output):
             result_text.config(state="normal")
