@@ -1,10 +1,33 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { VisionProvider, AnalyzeOptions } from "./types.js";
+import fs from "node:fs";
+import path from "node:path";
 
 const client = new Anthropic();
 
+export function loadKnowledgeDir(dirEnvKey: string): string {
+  const dir = process.env[dirEnvKey];
+  if (!dir) return "";
+  const resolved = path.resolve(dir);
+  if (!fs.existsSync(resolved)) return "";
+  return fs.readdirSync(resolved)
+    .filter(f => f.endsWith(".md") || f.endsWith(".txt"))
+    .map(f => fs.readFileSync(path.join(resolved, f), "utf-8"))
+    .join("\n\n");
+}
+
 export class AnthropicProvider implements VisionProvider {
-  async analyze({ platform, domElements, screenshot }: AnalyzeOptions): Promise<string> {
+  async analyze({ 
+    platform, 
+    domElements, 
+    screenshot, 
+    target_url,
+    context,
+    user_status
+  }: AnalyzeOptions): Promise<string> {
+    const codeKnowledge = loadKnowledgeDir("CODE_KNOWLEDGE");
+    const linkKnowledge = loadKnowledgeDir("LINK_KNOWLEDGE");
+
     const domSummary = domElements.map(el => {
       const parts = [el.tagName.toLowerCase()];
       if (el.role) parts.push(`role="${el.role}"`);
@@ -24,22 +47,29 @@ export class AnthropicProvider implements VisionProvider {
 
     content.push({
       type: "text",
-      text: `You are a test automation expert specializing in ${platform} test code generation.
-Generate Playwright test code based on the following DOM elements.
-Use getByRole() > getByLabel()/getByText() > getByTestId() > CSS selector in that priority order.
+      text: `あなたはWebアプリのテストコード生成AIです。以下の情報をもとにバグを再現するテストコードを生成してください。
+対象URL: ${target_url}
+プラットフォーム: ${platform}
+バグ概要: ${context}
+ユーザー状態: ${user_status} 
+
+ロケーター優先度: 
+getByRole() > getByLabel()/getByText() > getByTestId() > CSS selector in that priority order.
 
 DOM elements:
 ${domSummary}
 
-Return JSON only with this shape:
-{
-  "pageTitle": "string",
-  "rawDescription": "one-line summary",
-  "elements": [
-    { "type": "button|input|link|select|text", "label": "visible text", "selector": "css or xpath hint", "action": "tap|fill|assert" }
-  ]
-}`,
-    });
+出力ルール
+テストコードのみ出力（説明文不要）
+バグ再現に関連する操作を中心に絞ること
+
+## 参考コード:
+${codeKnowledge}
+
+## 画面遷移表:
+${linkKnowledge}
+`
+    })
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
