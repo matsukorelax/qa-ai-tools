@@ -19,7 +19,6 @@ export class DifyProvider implements VisionProvider {
       return parts.join(" ");
     }).join("\n");
 
-    console.error("AUTH:", `Bearer ${DIFY_API_KEY.slice(0,5)}...`);  
     const res = await fetch(`${DIFY_API_URL}`, {
       method: "POST",
       headers: {

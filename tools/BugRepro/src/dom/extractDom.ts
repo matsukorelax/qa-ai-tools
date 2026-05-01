@@ -14,7 +14,7 @@ export async function extractElements(page: Page, categories: string[] =[
         "ボタン": 'button, [role="button"]',
         "入力フォーム": 'input, textarea, select, label',
         "リンク": 'a[href]',
-        "テキスト表示": 'h1~h6, p, span, [data-testid]',
+        "テキスト表示": 'h1, h2, h3, h4, h5, h6, p, span, [data-testid]',
         "画像表示": 'img, [role="img"], svg',
         "レイアウト": 'header, footer, nav, main, section',
     }

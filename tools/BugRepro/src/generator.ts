@@ -4,7 +4,7 @@ import { takeScreenshot } from "./screenshot.js";
 import { analyzeScreenshot } from "./vision/index.js";
 import { chromium } from "playwright";
 import { extractElements } from "./dom/extractDom.js";
-import { permanAuth, closePopup, appLogin } from "./auth.js";
+import { stagingAuth, closePopup, appLogin } from "./auth.js";
 
 export interface GenerateOptions {
   url: string;
@@ -35,7 +35,7 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   if (baseUrl) {
     console.error(`[1/3] 認証 + ページ取得 ...`);
     await page.goto(baseUrl, { waitUntil: "networkidle" });
-    await permanAuth(page);
+    await stagingAuth(page);
     await closePopup(page);
     if (opts.auth === "login") {
       await appLogin(page);

@@ -1,14 +1,14 @@
 import fs from "node:fs/promises";
 import type { Page } from "playwright";
 
-export async function permanAuth(page: Page): Promise<void> {
-  const modal = page.locator(process.env.PERMAN_MODAL_SELECTOR ?? "");
+export async function stagingAuth(page: Page): Promise<void> {
+  const modal = page.locator(process.env.STAGING_MODAL_SELECTOR ?? "");
   await modal.waitFor({ state: "visible", timeout: 30_000 });
-  await modal.locator(process.env.PERMAN_USERNAME_SELECTOR ?? "").fill(process.env.STG_USER ?? "");
-  await modal.locator(process.env.PERMAN_PASSWORD_SELECTOR ?? "").fill(process.env.STG_PASS ?? "");
-  await modal.locator(process.env.PERMAN_SUBMIT_SELECTOR ?? "").click();
+  await modal.locator(process.env.STAGING_USERNAME_SELECTOR ?? "").fill(process.env.STG_USER ?? "");
+  await modal.locator(process.env.STAGING_PASSWORD_SELECTOR ?? "").fill(process.env.STG_PASS ?? "");
+  await modal.locator(process.env.STAGING_SUBMIT_SELECTOR ?? "").click();
   await page.waitForLoadState("networkidle");
-  console.error("  perman認証完了");
+  console.error("  ステージング認証完了");
 }
 
 export async function closePopup(page: Page): Promise<void> {
