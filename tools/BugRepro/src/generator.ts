@@ -4,7 +4,7 @@ import { takeScreenshot } from "./screenshot.js";
 import { analyzeScreenshot } from "./vision/index.js";
 import { chromium } from "playwright";
 import { extractElements } from "./dom/extractDom.js";
-import { permanAuth, closePopup, appLogin } from "./auth.js";
+import { stagingAuth, closePopup, appLogin } from "./auth.js";
 
 export interface GenerateOptions {
   url: string;
@@ -35,7 +35,7 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   if (baseUrl) {
     console.error(`[1/3] 認証 + ページ取得 ...`);
     await page.goto(baseUrl, { waitUntil: "networkidle" });
-    await permanAuth(page);
+    await stagingAuth(page);
     await closePopup(page);
     if (opts.auth === "login") {
       await appLogin(page);
@@ -65,11 +65,16 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   console.error(`[3/3] コード生成完了`);
   await browser.close();
 
-  if (opts.output) {
+  if (opts.output && opts.platform === "webview") {
     const finalCode = injectStorageState(code);
     await fs.writeFile(opts.output, finalCode, "utf8");
     console.error(`Written to ${opts.output}`);
     runTest(opts.output);
+  } else if (opts.output && opts.platform === "android") {
+    const outputPath = opts.output.replace(/\.spec\.ts$/, ".py");
+    await fs.writeFile(outputPath, code, "utf8");
+    console.error(`Written to ${opts.output}`);
+    runTest(outputPath);
   } else {
     process.stdout.write(code + "\n");
   }
@@ -83,15 +88,29 @@ function injectStorageState(code: string): string {
 
 function runTest(outputPath: string): void {
   const normalizedPath = outputPath.replace(/\\/g, "/");
-  console.error(`\n[実行] playwright test ${normalizedPath}`);
-  const result = spawnSync(
-    "npx",
-    ["playwright", "test", "--headed", "--reporter=list", normalizedPath],
-    { stdio: "inherit", env: process.env, shell: true }
-  );
-  console.error(
-    result.status === 0
-      ? "✓ テスト成功"
-      : `✗ テスト失敗 (exit code: ${result.status})`
-  );
-}
+  if (normalizedPath.includes(".spec.ts")) {
+    console.error(`\n[実行] playwright test ${normalizedPath}`);
+    const result = spawnSync(
+      "npx",
+      ["playwright", "test", "--headed", "--reporter=list", normalizedPath],
+      { stdio: "inherit", env: process.env, shell: true }
+    );
+    console.error(
+      result.status === 0
+        ? "✓ テスト成功"
+        : `✗ テスト失敗 (exit code: ${result.status})`
+    );
+  } else if (normalizedPath.includes(".py")) {
+    console.error(`\n[実行] pytest ${normalizedPath}`);
+    const result = spawnSync(
+      "venv/Scripts/pytest.exe",
+      [normalizedPath],
+      { stdio: "inherit", env: process.env, shell: true }
+    );
+    console.error(
+      result.status === 0
+        ? "✓ テスト成功"
+        : `✗ テスト失敗 (exit code: ${result.status})`
+    );
+  };
+};
