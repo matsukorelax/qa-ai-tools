@@ -1,3 +1,7 @@
 claude/
 safety.txt
 test-results/
+afk_last_week.json
+afk_this_week.json
+window_last_week.json
+window_this_week.json

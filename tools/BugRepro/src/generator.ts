@@ -102,8 +102,9 @@ function runTest(outputPath: string): void {
     );
   } else if (normalizedPath.includes(".py")) {
     console.error(`\n[実行] pytest ${normalizedPath}`);
+    const pytest = process.platform === "win32" ? "venv\\Scripts\\pytest.exe" : "venv/bin/pytest";
     const result = spawnSync(
-      "venv/Scripts/pytest.exe",
+      pytest,
       [normalizedPath],
       { stdio: "inherit", env: process.env, shell: true }
     );
