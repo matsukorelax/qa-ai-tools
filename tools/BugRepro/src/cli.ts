@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { Command } from "commander";
-import { generateTests } from "./generator.js";
+import { generateTests, saveAuth } from "./generator.js";
 
 const program = new Command();
 
@@ -48,6 +48,18 @@ program
         vision: opts.vision,
         elements: opts.elements ? opts.elements.split(",") : undefined
       });
+    } catch (err) {
+      console.error("Error:", err instanceof Error ? err.message : err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("save-auth")
+  .description("手動ログイン → state.json 保存（reCAPTCHA 対策）")
+  .action(async () => {
+    try {
+      await saveAuth();
     } catch (err) {
       console.error("Error:", err instanceof Error ? err.message : err);
       process.exit(1);

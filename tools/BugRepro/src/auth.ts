@@ -42,6 +42,12 @@ export async function appLogin(page: Page): Promise<void> {
   await page.waitForTimeout(150);
   await page.getByRole("button", { name: new RegExp(process.env.LOGIN_SUBMIT_TEXT ?? "") }).click();
   const domain = new URL(process.env.BASE_URL ?? "").hostname;
-  await page.waitForURL(new RegExp(domain), { timeout: 30_000 });
+  const result = await Promise.race([
+    page.waitForURL(new RegExp(domain), { timeout: 30_000 }).then(() => "success"),
+    page.waitForSelector(process.env.RECAPTHA_LOCATOR ?? "").then(() => "recaptcha"), 
+  ]);
+  if(result === "recaptcha") {
+    throw new Error("reCAPTHAが検出されました。saveAuthを実行してください")
+  }
   console.error("  ログイン完了");
 }

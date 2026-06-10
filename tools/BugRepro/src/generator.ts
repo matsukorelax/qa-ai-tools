@@ -5,6 +5,7 @@ import { analyzeScreenshot } from "./vision/index.js";
 import { chromium } from "playwright";
 import { extractElements } from "./dom/extractDom.js";
 import { stagingAuth, closePopup, appLogin } from "./auth.js";
+import path from "node:path";
 
 export interface GenerateOptions {
   url: string;
@@ -19,6 +20,10 @@ export interface GenerateOptions {
 }
 
 export async function generateTests(opts: GenerateOptions): Promise<void> {
+  const STATE_PATH = "playwright/.auth/state.json";
+  const hasState = opts.auth === "login" &&
+    await fs.access(STATE_PATH).then(() => true).catch(() => false);
+
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({
     ...(process.env.BASIC_USER ? {
@@ -26,7 +31,8 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
         username: process.env.BASIC_USER,
         password: process.env.BASIC_PASS ?? "",
       }
-    } : {})
+    } : {}),
+    ...(hasState ? { storageState: STATE_PATH } : {})
   });
   const page = await context.newPage();
   await page.setViewportSize(opts.viewport);
@@ -35,14 +41,17 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
   if (baseUrl) {
     console.error(`[1/3] 認証 + ページ取得 ...`);
     await page.goto(baseUrl, { waitUntil: "networkidle" });
-    await stagingAuth(page);
-    await closePopup(page);
-    if (opts.auth === "login") {
-      await appLogin(page);
+    if (!hasState) {
+      await stagingAuth(page);
       await closePopup(page);
+      if (opts.auth === "login") {
+        await appLogin(page);
+        await closePopup(page);
+      }
+      await fs.mkdir("playwright/.auth", { recursive: true });
+      await context.storageState({ path: "playwright/.auth/state.json" });
     }
-    await fs.mkdir("playwright/.auth", { recursive: true });
-    await context.storageState({ path: "playwright/.auth/state.json" });
+    await closePopup(page);
     await page.goto(opts.url, { waitUntil: "networkidle" });
   } else {
     console.error(`[1/3] ページ取得 ${opts.url} ...`);
@@ -81,7 +90,7 @@ export async function generateTests(opts: GenerateOptions): Promise<void> {
 }
 
 function injectStorageState(code: string): string {
-  const STATE_FILE = "playwright/.auth/state.json";
+  const STATE_FILE = path.resolve("playwright/.auth/state.json").replace(/\\/g, "/");
   const injection = `\ntest.use({ storageState: '${STATE_FILE}' });\n`;
   return code.replace(/(import[^\n]+\n)+/, (imports) => imports + injection);
 }
@@ -114,4 +123,28 @@ function runTest(outputPath: string): void {
         : `✗ テスト失敗 (exit code: ${result.status})`
     );
   };
+};
+
+export async function saveAuth(): Promise<void> {
+  const browser = await chromium.launch({ headless: false });
+  const context = await browser.newContext({
+    ...(process.env.BASIC_USER ? {
+      httpCredentials: {
+        username: process.env.BASIC_USER,
+        password: process.env.BASIC_PASS ?? "",
+      }
+    } : {})
+  });
+  const page = await context.newPage();
+
+  const baseUrl = process.env.BASE_URL ?? "";
+  await page.goto(baseUrl, {waitUntil: "networkidle"});
+  await stagingAuth(page);
+  await closePopup(page);
+
+  console.error("ブラウザでログインしてください。完了後ブラウザを閉じてください");
+  await page.waitForEvent("close", { timeout: 600_000 });
+  await fs.mkdir("playwright/.auth", { recursive: true });
+  await context.storageState({ path: "playwright/.auth/state.json" });
+  await browser.close();
 };

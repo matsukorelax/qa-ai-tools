@@ -130,7 +130,12 @@ def show_bugrepro_form(root):
                     text=True,
                     encoding="utf-8"
                     )
-                    output = proc.stdout or proc.stderr or "出力が空です"
+                    parts = []
+                    if proc.stdout:
+                        parts.append(proc.stdout)
+                    if proc.stderr:
+                        parts.append("[stderr]\n" + proc.stderr)
+                    output = "\n".join(parts) or "出力が空です"
                 except Exception as e:
                     output = str(e)
                 win.after(0, lambda: show_result(output))
@@ -144,6 +149,36 @@ def show_bugrepro_form(root):
 
         threading.Thread(target=run, daemon=True).start()
 
+    def on_save_auth():
+        result_text.config(state="normal")
+        result_text.delete("1.0", "end")
+        result_text.insert("end", "ブラウザでログインしてください。完了後ブラウザを閉じてください...")
+        result_text.config(state="disabled")
+        save_auth_btn.config(state="disabled")
+
+        def run_save_auth():
+            cmd = [r"C:\nvm4w\nodejs\npx.cmd", "tsx", "src/cli.ts", "save-auth"]
+            try:
+                proc = subprocess.run(cmd, cwd=BUGREPRO_DIR, capture_output=True, text=True, encoding="utf-8")
+                parts = []
+                if proc.stdout:
+                    parts.append(proc.stdout)
+                if proc.stderr:
+                    parts.append("[stderr]\n" + proc.stderr)
+                output = "\n".join(parts) or "出力が空です"
+            except Exception as e:
+                output = str(e)
+            win.after(0, lambda: show_save_auth_result(output))
+
+        def show_save_auth_result(output):
+            result_text.config(state="normal")
+            result_text.delete("1.0", "end")
+            result_text.insert("end", output)
+            result_text.config(state="disabled")
+            save_auth_btn.config(state="normal")
+
+        threading.Thread(target=run_save_auth, daemon=True).start()
+
     btn_frame = tk.Frame(win, bg=BG)
     btn_frame.pack(fill="x", pady=8)
     submit_btn = tk.Button(
@@ -151,6 +186,11 @@ def show_bugrepro_form(root):
         bg="#3a7bd5", fg=FG, relief="flat", padx=16, pady=4
     )
     submit_btn.pack(side="right", padx=12)
+    save_auth_btn = tk.Button(
+        btn_frame, text="Save Auth", command=on_save_auth,
+        bg="#5a3a9a", fg=FG, relief="flat", padx=16, pady=4
+    )
+    save_auth_btn.pack(side="right", padx=4)
     tk.Button(
         btn_frame, text="閉じる", command=win.destroy,
         bg="#3a3a3a", fg=FG, relief="flat", padx=16, pady=4
