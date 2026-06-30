@@ -36,5 +36,3 @@ n8n（Webhook受信・バッチ処理）→ Dify（AI分析）→ Markdownレポ
 
 ## データ
 自作バグチケットDB（スプレッドシート・約150件）
-
-npx appium --allow-insecure uiautomator2:chromedriver_autodownload
